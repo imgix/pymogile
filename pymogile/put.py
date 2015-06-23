@@ -30,14 +30,16 @@ try:
   from cStringIO import StringIO
 except ImportError: 
   from StringIO import StringIO
+from pymogile.exceptions import PutError
+
+
 
 # True by default when running as a script
 # Otherwise, we turn the noise off...
 verbose = False
 
 def barf(msg): 
-  print >> sys.stderr, "Error! %s" % msg
-  sys.exit(1)
+  raise PutError("Error! %s" % msg)
 
 if sys.version_info < (2, 4): 
   barf("Requires Python 2.4+")
@@ -135,7 +137,6 @@ def putfile(f, uri, username=None, password=None):
       if scheme in set(['basic', 'digest']): 
         if verbose: 
           msg = "Performing %s Authentication..." % scheme.capitalize()
-          print >> sys.stderr, msg
       else: barf("Unknown authentication scheme: %s" % scheme)
 
       if scheme == 'basic': 
@@ -146,8 +147,6 @@ def putfile(f, uri, username=None, password=None):
       elif scheme == 'digest': 
         if verbose: 
           msg = "uses fragile, undocumented features in urllib2"
-          print >> sys.stderr, "Warning! Digest Auth %s" % msg
-
 
         passwd = type('Password', (object,), {
           'find_user_password': lambda self, *args: (username, password), 
@@ -171,15 +170,12 @@ def putfile(f, uri, username=None, password=None):
     elif status in okay: 
       if (username and password) and (not authorized): 
         msg = "Warning! The supplied username and password went unused"
-        print >> sys.stderr, msg
 
       if verbose: 
         resultLine = "Success! Resource %s"
         statuses = {200: 'modified', 201: 'created', 204: 'modified'}
-        print resultLine % statuses[status]
 
         statusLine = "Response-Status: %s %s"
-        print statusLine % (status, resp.reason)
 
         body = resp.read(58)
         body = body.rstrip('\r\n')
@@ -189,7 +185,6 @@ def putfile(f, uri, username=None, password=None):
           body = body[:57] + '[...]'
 
         bodyLine = 'Response-Body: "%s"'
-        print bodyLine % body
       break
 
     # @@ raise PutError, do the catching in main?

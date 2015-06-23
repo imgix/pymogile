@@ -1,0 +1,3 @@
+build/
+pymogile.egg-info/
+*.pyc

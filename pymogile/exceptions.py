@@ -23,3 +23,5 @@ class HTTPError(Exception):
 
   def __str__(self):
     return 'HTTP Error %d, %s' % (self.code, self.content)
+
+class PutError(Exception): pass
